@@ -1,6 +1,15 @@
 Build a simple snake game
 
-methods
+--methods
+    draw_snake
+    draw_world(env)
+    draw_above_methods
+    main method for all calculation
+    All relevant goroutines
+    Food Snack spawningS
+
+--struct
+    For snake_1 and snake_2
 
 draw the snake --- have 2 snakes, controllable
 concurrently(?)
