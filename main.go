@@ -1,6 +1,7 @@
 package GoGoSnakeeee
 
 import (
+	"context"
 	"fmt"
 	"github.com/nsf/termbox-go"
 	"time"
@@ -19,15 +20,46 @@ type snake2 struct {
 	snacksEaten int
 }
 
-func drawSnakes() {
+func drawSnakes(snk snake) {
 
+	//For one snake.for both, initiate with the loops
+	termbox.SetCell(snk.x, snk.y, '∩', termbox.Attribute(7), termbox.Attribute(3))
+	termbox.SetCell(snk.x, snk.y+1, '|', termbox.Attribute(7), termbox.Attribute(3))
+	termbox.SetCell(snk.x, snk.y+2, '|', termbox.Attribute(7), termbox.Attribute(3))
+	termbox.SetCell(snk.x, snk.y+3, '|', termbox.Attribute(7), termbox.Attribute(3))
+	termbox.SetCell(snk.x, snk.y+4, '|', termbox.Attribute(7), termbox.Attribute(3))
 }
 
-func drawWorld() {
-
+//creates the entire map environment
+func drawWorld(mapEnvDup [25]string) {
+	getColour := func(x int, y int, mapEnvDup2 [25]string) int {
+		switch mapEnvDup2[y][x] {
+		case '0':
+			return 3
+		case '=':
+			return 10
+		case '|':
+			return 14
+		case '-':
+			return 13
+		}
+		return -1
+	}
+	getColour(0, 0, mapEnvDup)
+	wid, hei := 60, 25
+	for x := 0; x < wid; x++ {
+		for y := 0; y < hei; y++ {
+			termbox.SetCell(x, y, rune(mapEnvDup[y][x]), termbox.Attribute(getColour(x, y, mapEnvDup)), termbox.Attribute(getColour(x, y, mapEnvDup))) //sets the colour
+		}
+	}
 }
 
-func drawEnv() {
+func drawEnv(mapEnvDup [25]string, snk snake) {
+	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+	drawSnakes(snk)
+	drawWorld(mapEnvDup)
+
+	termbox.Flush()
 
 }
 
@@ -35,7 +67,7 @@ func main() {
 
 	mapEnv := [25]string{}
 
-	mapEnv[0] = "|-----------------------------------------------------------------------------|"
+	mapEnv[0] = "|-------------------------------------------===-------------------------------|"
 	mapEnv[1] = "|                                                                             |"
 	mapEnv[2] = "|                                                                             |"
 	mapEnv[3] = "|                                                                             |"
@@ -59,7 +91,7 @@ func main() {
 	mapEnv[21] = "|                                                                             |"
 	mapEnv[22] = "|                                                                             |"
 	mapEnv[23] = "|                                                                             |"
-	mapEnv[24] = "------------------------------------------------------------------------------"
+	mapEnv[24] = "0-------------------------------------------===-------------------------------"
 
 	err := termbox.Init()
 
