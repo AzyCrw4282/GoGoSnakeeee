@@ -1,7 +1,9 @@
 package GoGoSnakeeee
 
 import (
+	"fmt"
 	"github.com/nsf/termbox-go"
+	"time"
 )
 
 type snake struct {
@@ -96,6 +98,9 @@ func main() {
 		panic(err)
 	}
 
+	ticker := time.NewTicker(50 * time.Millisecond)
+	quit := make(chan string)
+
 	//Go routine for even handler
 	eventQueue := make(chan termbox.Event)
 	go func() {
@@ -105,7 +110,6 @@ func main() {
 	}()
 
 	redrawProcess := make(chan snake)
-
 	go func(snkArg chan snake, mapEnvArg [25]string) {
 		for {
 			select {
@@ -116,5 +120,9 @@ func main() {
 	}(redrawProcess, mapEnv)
 
 	//Main calculation method
+
+	msg := <-quit
+	termbox.Close()
+	fmt.Println(msg)
 
 }
