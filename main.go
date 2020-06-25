@@ -9,6 +9,7 @@ import (
 type snake struct {
 	x           int
 	y           int
+	snakeNitroLvl int //default/initially at 0, will be altered randomly
 	snacksEaten int
 }
 
@@ -120,6 +121,54 @@ func main() {
 	}(redrawProcess, mapEnv)
 
 	//Main calculation method
+	/*
+		--goroutine for main handling
+			--struct instance
+			--for instance for continoious updates
+				--cases: timecount, arrow handling for each press
+				first initiaton case(maybe) and end case outside of loop
+
+	 */
+
+	go func(t *time.Ticker,snkArg chan snake, worldMap [25]string) {
+		for {
+			select {
+			case <- t.C:
+
+			case event := <- eventQueue:
+				if event.Type == termbox.EventKey{
+					case termbox.KeyArrowUp:
+
+
+					case termbox.KeyArrowDown:
+
+
+
+					case termbox.KeyArrowLeft:
+
+
+
+					case termbox.KeyArrowRight:
+
+
+					case termbox.KeyEsc:
+						quit <- "Game has ended.... Thanks for playing."
+				}
+
+
+
+
+
+		}
+
+
+
+	}
+
+
+
+	}(ticker,redrawProcess,mapEnv)
+
 
 	msg := <-quit
 	termbox.Close()
