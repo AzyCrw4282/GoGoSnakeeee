@@ -1,10 +1,7 @@
 package GoGoSnakeeee
 
 import (
-	"context"
-	"fmt"
 	"github.com/nsf/termbox-go"
-	"time"
 )
 
 type snake struct {
@@ -98,5 +95,26 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	//Go routine for even handler
+	eventQueue := make(chan termbox.Event)
+	go func() {
+		for {
+			eventQueue <- termbox.PollEvent() //polls event
+		}
+	}()
+
+	redrawProcess := make(chan snake)
+
+	go func(snkArg chan snake, mapEnvArg [25]string) {
+		for {
+			select {
+			case val := <-snkArg:
+				drawEnv(mapEnvArg, val)
+			}
+		}
+	}(redrawProcess, mapEnv)
+
+	//Main calculation method
 
 }
