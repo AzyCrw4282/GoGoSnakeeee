@@ -7,10 +7,10 @@ import (
 )
 
 type snake struct {
-	x           int
-	y           int
+	x             int
+	y             int
 	snakeNitroLvl int //default/initially at 0, will be altered randomly
-	snacksEaten int
+	snacksEaten   int
 }
 
 //Implement one snake first and then follow on....
@@ -92,7 +92,12 @@ func main() {
 	mapEnv[22] = "|                                                                             |"
 	mapEnv[23] = "|                                                                             |"
 	mapEnv[24] = "0-------------------------------------------===-------------------------------"
-
+	/*
+		- 45
+		| 124
+		0 48
+		= 61
+	*/
 	err := termbox.Init()
 
 	if err != nil {
@@ -124,75 +129,73 @@ func main() {
 	/*
 	 */
 
-	go func(t *time.Ticker,mainSnk chan snake, worldMap [25]string) {
+	go func(t *time.Ticker, mainSnk chan snake, worldMap [25]string) {
 		snk := snake{
 			x:             10,
 			y:             25,
 			snakeNitroLvl: 0,
-			snacksEaten:   0,
+			snacksEaten:   0, //TBW
 		}
 		for {
 			select {
-				case <- t.C://updates time count for each cycle. Check
-					if (snk.snakeNitroLvl == 0) {
-						if snk.y < 23{
-							if worldMap[snk.x][snk.y] == 32{//triggered by space bar
+			case <-t.C: //updates time count for each cycle. Check
+				if snk.snakeNitroLvl > 0 {
+					if snk.y < 23 {
+						if worldMap[snk.x][snk.y] == 32 { //triggered by space bar
+							snk.y += 2
+							mainSnk <- snk
+						}
+					}
+					snk.snakeNitroLvl--
+				}
+			case event := <-eventQueue:
+				if event.Type == termbox.EventKey {
+					switch event.Key { // 70x25
+					case termbox.KeyArrowUp:
+						if snk.y > 0 {
+							if worldMap[snk.y+3][snk.x] != 28 && snk.snakeNitroLvl == 0 {
 								snk.y++
 								mainSnk <- snk
 							}
 						}
-					} else if (snk.snakeNitroLvl > 0){
-						snk.snakeNitroLvl--
-					}
-				case event := <- eventQueue:
-					if event.Type == termbox.EventKey {
-						switch event.Key { // 70x25
-							case termbox.KeyArrowUp:
-								//doesnt exceed upper range
-								if snk.y > 0 {
-									if worldMap[snk.y+3][snk.x] != 28 && snk.snakeNitroLvl == 0{
-										snk.y++
-										mainSnk <- snk
-									}
-								}
-
-							case termbox.KeyArrowDown:
-								if snk.y < 25{
-									if worldMap[snk.y+3][snk.x] != 27 || worldMap[snk.y+3][snk.x] != 28{
-										snk.y--
-										mainSnk <- snk
-									}
-								}
-							case termbox.KeyArrowLeft:
-								if snk.x > 0 {
-									if worldMap[snk.y][snk.x+3] <0 ||
-								}
-
-
-							case termbox.KeyArrowRight:
-
-
-							case termbox.KeySpace:
-								snk.snakeNitroLvl++
-
-							case termbox.KeyEsc:
-								quit <- "Game has ended.... Thanks for playing."
+					case termbox.KeyArrowDown:
+						if snk.y < 25 {
+							if worldMap[snk.y+2][snk.x] != 45 || worldMap[snk.y+3][snk.x] != 45 {
+								snk.y--
+								mainSnk <- snk
+							}
 						}
-					}
+					case termbox.KeyArrowLeft: //for left check snks left move -
+						if snk.x > 0 && snk.y > 0 && snk.y < 23 {
+							if worldMap[snk.y][snk.x-1] == 32 && worldMap[snk.y][snk.x-2] == 32 && worldMap[snk.y][snk.x-3] == 32 {
+								snk.x--
+								mainSnk <- snk
+							}
+						}
+					case termbox.KeyArrowRight:
+						if snk.x < 67 && snk.y > 0 && snk.y < 22 {
+							if worldMap[snk.y][snk.x+1] == 32 && worldMap[snk.y][snk.x+2] == 32 && worldMap[snk.y][snk.x+3] == 32 {
+								snk.x++
+								mainSnk <- snk
+							}
+						}
+					case termbox.KeySpace:
+						snk.snakeNitroLvl++
 
+					case termbox.KeyEsc:
+						quit <- "Game has ended.... Thanks for playing."
+					}
+				}
 			}
 			//check here for end bit, hitting a pre recorded zone.
 			if snk.y == 1 && snk.x == 35 {
-				termbox.Clear(termbox.ColorDefault,termbox.ColorDefault)
+				termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 				t.Stop()
 				quit <- "You win the game for the simple move"
 			}
-	}
+		}
 
-
-	}(ticker,redrawProcess,mapEnv)
-
-
+	}(ticker, redrawProcess, mapEnv)
 	msg := <-quit
 	termbox.Close()
 	fmt.Println(msg)
