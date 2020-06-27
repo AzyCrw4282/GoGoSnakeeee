@@ -134,18 +134,16 @@ func main() {
 		for {
 			select {
 				case <- t.C://updates time count for each cycle. Check
-					if (snk.snakeNitroLvl >0) {
-						//set y -coords
-						if worldMap[]
-
-
-
+					if (snk.snakeNitroLvl == 0) {
+						if snk.y < 23{
+							if worldMap[snk.x][snk.y] == 32{//triggered by space bar
+								snk.y++
+								mainSnk <- snk
+							}
+						}
+					} else if (snk.snakeNitroLvl > 0){
+						snk.snakeNitroLvl--
 					}
-					else if (snk.snakeNitroLvl >0){
-
-				}
-
-
 				case event := <- eventQueue:
 					if event.Type == termbox.EventKey {
 						switch event.Key { // 70x25
@@ -165,11 +163,9 @@ func main() {
 										mainSnk <- snk
 									}
 								}
-
-
 							case termbox.KeyArrowLeft:
 								if snk.x > 0 {
-									if worldMap[snk.y][snk.x+3] <0 || world
+									if worldMap[snk.y][snk.x+3] <0 ||
 								}
 
 
@@ -179,8 +175,6 @@ func main() {
 							case termbox.KeySpace:
 								snk.snakeNitroLvl++
 
-
-
 							case termbox.KeyEsc:
 								quit <- "Game has ended.... Thanks for playing."
 						}
@@ -188,8 +182,12 @@ func main() {
 
 			}
 			//check here for end bit, hitting a pre recorded zone.
+			if snk.y == 1 && snk.x == 35 {
+				termbox.Clear(termbox.ColorDefault,termbox.ColorDefault)
+				t.Stop()
+				quit <- "You win the game for the simple move"
+			}
 	}
-
 
 
 	}(ticker,redrawProcess,mapEnv)
