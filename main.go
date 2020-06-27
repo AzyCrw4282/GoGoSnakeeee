@@ -1,4 +1,4 @@
-package GoGoSnakeeee
+package main
 
 import (
 	"fmt"
@@ -23,17 +23,19 @@ type snake2 struct {
 func drawSnakes(snk snake) {
 
 	//For one snake.for both, initiate with the loops
-	termbox.SetCell(snk.x, snk.y, '∩', termbox.Attribute(7), termbox.Attribute(3))
-	termbox.SetCell(snk.x, snk.y+1, '|', termbox.Attribute(7), termbox.Attribute(3))
-	termbox.SetCell(snk.x, snk.y+2, '|', termbox.Attribute(7), termbox.Attribute(3))
-	termbox.SetCell(snk.x, snk.y+3, '|', termbox.Attribute(7), termbox.Attribute(3))
-	termbox.SetCell(snk.x, snk.y+4, '|', termbox.Attribute(7), termbox.Attribute(3))
+	termbox.SetCell(snk.x, snk.y, '*', termbox.Attribute(3), termbox.Attribute(7))
+	termbox.SetCell(snk.x, snk.y+1, '*', termbox.Attribute(3), termbox.Attribute(7))
+	termbox.SetCell(snk.x, snk.y+2, '*', termbox.Attribute(3), termbox.Attribute(7))
+	termbox.SetCell(snk.x, snk.y+3, '*', termbox.Attribute(3), termbox.Attribute(7))
+	termbox.SetCell(snk.x, snk.y+4, '*', termbox.Attribute(3), termbox.Attribute(7))
 }
 
 //creates the entire map environment
 func drawWorld(mapEnvDup [25]string) {
-	getColour := func(x int, y int, mapEnvDup2 [25]string) int {
-		switch mapEnvDup2[y][x] {
+	getColour := func(x int, y int, mapEnvDup [25]string) int {
+		switch mapEnvDup[y][x] {
+		case ' ':
+			return 7
 		case '0':
 			return 3
 		case '=':
@@ -47,9 +49,10 @@ func drawWorld(mapEnvDup [25]string) {
 	}
 	getColour(0, 0, mapEnvDup)
 	wid, hei := 70, 25
-	for x := 0; x < wid; x++ {
-		for y := 0; y < hei; y++ {
+	for y := 0; y < hei; y++ {
+		for x := 0; x < wid; x++ {
 			termbox.SetCell(x, y, rune(mapEnvDup[y][x]), termbox.Attribute(getColour(x, y, mapEnvDup)), termbox.Attribute(getColour(x, y, mapEnvDup))) //sets the colour
+
 		}
 	}
 }
@@ -58,12 +61,12 @@ func drawEnv(mapEnvDup [25]string, snk snake) {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	drawSnakes(snk)
 	drawWorld(mapEnvDup)
-
 	termbox.Flush()
 
 }
 
 func main() {
+	fmt.Println("making")
 
 	mapEnv := [25]string{}
 
@@ -79,11 +82,11 @@ func main() {
 	mapEnv[9] = "|                                  -------------                              |"
 	mapEnv[10] = "|                                                                             |"
 	mapEnv[11] = "|                                                                             |"
-	mapEnv[12] = "|                       |                                                     |"
-	mapEnv[13] = "|                       |                                                     |"
-	mapEnv[14] = "|                       |                                                     |"
-	mapEnv[15] = "|                       |                                                     |"
-	mapEnv[16] = "|                       |                                                     |"
+	mapEnv[12] = "|                                                                             |"
+	mapEnv[13] = "|                                                                             |"
+	mapEnv[14] = "|                                                                             |"
+	mapEnv[15] = "|                                                                             |"
+	mapEnv[16] = "|                                                                             |"
 	mapEnv[17] = "|                                        -------------                        |"
 	mapEnv[18] = "|                                                                             |"
 	mapEnv[19] = "|                                                                             |"
@@ -92,11 +95,11 @@ func main() {
 	mapEnv[22] = "|                                                                             |"
 	mapEnv[23] = "|                                                                             |"
 	mapEnv[24] = "0-------------------------------------------===-------------------------------"
-	/*
-		- 45
-		| 124
-		0 48
-		= 61
+	/*ASCII values
+	- 45
+	| 124
+	0 48
+	= 61
 	*/
 	err := termbox.Init()
 
@@ -125,7 +128,7 @@ func main() {
 		}
 	}(redrawProcess, mapEnv)
 
-	//using x[y][x] method
+	//using map[y][x] method
 	/*
 	 */
 
@@ -138,36 +141,47 @@ func main() {
 		}
 		for {
 			select {
-			case <-t.C: //updates time count for each cycle. Check
+			case <-t.C: //TBC
 				if snk.snakeNitroLvl > 0 {
 					if snk.y < 23 {
-						if worldMap[snk.x][snk.y] == 32 { //triggered by space bar
+						if worldMap[snk.y][snk.x] == 32 { //triggered by space bar
 							snk.y += 2
 							mainSnk <- snk
 						}
 					}
 					snk.snakeNitroLvl--
+				} else if snk.snakeNitroLvl == 0 {
+					if snk.y < 23 {
+						if worldMap[snk.y][snk.x] == 32 {
+							snk.y++
+							mainSnk <- snk
+						}
+					}
 				}
 			case event := <-eventQueue:
 				if event.Type == termbox.EventKey {
+					snk.y = 10
 					switch event.Key { // 70x25
 					case termbox.KeyArrowUp:
 						if snk.y > 0 {
-							if worldMap[snk.y+3][snk.x] != 28 && snk.snakeNitroLvl == 0 {
+							if worldMap[snk.y+3][snk.x] != 45 && snk.snakeNitroLvl == 0 {
 								snk.y++
 								mainSnk <- snk
 							}
 						}
 					case termbox.KeyArrowDown:
 						if snk.y < 25 {
-							if worldMap[snk.y+2][snk.x] != 45 || worldMap[snk.y+3][snk.x] != 45 {
+							if worldMap[snk.y+1][snk.x] != 45 || worldMap[snk.y+2][snk.x] != 45 {
 								snk.y--
 								mainSnk <- snk
 							}
 						}
 					case termbox.KeyArrowLeft: //for left check snks left move -
 						if snk.x > 0 && snk.y > 0 && snk.y < 23 {
-							if worldMap[snk.y][snk.x-1] == 32 && worldMap[snk.y][snk.x-2] == 32 && worldMap[snk.y][snk.x-3] == 32 {
+							c1 := worldMap[snk.y][snk.x-1]
+							c2 := worldMap[snk.y][snk.x-2]
+							c3 := worldMap[snk.y][snk.x-3]
+							if (c3 == 32 && c3 != 124) || (c2 == 32 && c2 != 124) || (c1 == 32 && c1 != 124) {
 								snk.x--
 								mainSnk <- snk
 							}
