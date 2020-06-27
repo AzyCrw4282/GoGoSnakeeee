@@ -46,7 +46,7 @@ func drawWorld(mapEnvDup [25]string) {
 		return -1
 	}
 	getColour(0, 0, mapEnvDup)
-	wid, hei := 60, 25
+	wid, hei := 70, 25
 	for x := 0; x < wid; x++ {
 		for y := 0; y < hei; y++ {
 			termbox.SetCell(x, y, rune(mapEnvDup[y][x]), termbox.Attribute(getColour(x, y, mapEnvDup)), termbox.Attribute(getColour(x, y, mapEnvDup))) //sets the colour
@@ -120,49 +120,74 @@ func main() {
 		}
 	}(redrawProcess, mapEnv)
 
-	//Main calculation method
+	//using x[y][x] method
 	/*
-		--goroutine for main handling
-			--struct instance
-			--for instance for continoious updates
-				--cases: timecount, arrow handling for each press
-				first initiaton case(maybe) and end case outside of loop
-
 	 */
 
-	go func(t *time.Ticker,snkArg chan snake, worldMap [25]string) {
+	go func(t *time.Ticker,mainSnk chan snake, worldMap [25]string) {
+		snk := snake{
+			x:             10,
+			y:             25,
+			snakeNitroLvl: 0,
+			snacksEaten:   0,
+		}
 		for {
 			select {
-			case <- t.C:
-
-			case event := <- eventQueue:
-				if event.Type == termbox.EventKey{
-					case termbox.KeyArrowUp:
-
-
-					case termbox.KeyArrowDown:
+				case <- t.C://updates time count for each cycle. Check
+					if (snk.snakeNitroLvl >0) {
+						//set y -coords
+						if worldMap[]
 
 
 
-					case termbox.KeyArrowLeft:
+					}
+					else if (snk.snakeNitroLvl >0){
 
-
-
-					case termbox.KeyArrowRight:
-
-
-					case termbox.KeyEsc:
-						quit <- "Game has ended.... Thanks for playing."
 				}
 
 
+				case event := <- eventQueue:
+					if event.Type == termbox.EventKey {
+						switch event.Key { // 70x25
+							case termbox.KeyArrowUp:
+								//doesnt exceed upper range
+								if snk.y > 0 {
+									if worldMap[snk.y+3][snk.x] != 28 && snk.snakeNitroLvl == 0{
+										snk.y++
+										mainSnk <- snk
+									}
+								}
+
+							case termbox.KeyArrowDown:
+								if snk.y < 25{
+									if worldMap[snk.y+3][snk.x] != 27 || worldMap[snk.y+3][snk.x] != 28{
+										snk.y--
+										mainSnk <- snk
+									}
+								}
+
+
+							case termbox.KeyArrowLeft:
+								if snk.x > 0 {
+									if worldMap[snk.y][snk.x+3] <0 || world
+								}
+
+
+							case termbox.KeyArrowRight:
+
+
+							case termbox.KeySpace:
+								snk.snakeNitroLvl++
 
 
 
-		}
+							case termbox.KeyEsc:
+								quit <- "Game has ended.... Thanks for playing."
+						}
+					}
 
-
-
+			}
+			//check here for end bit, hitting a pre recorded zone.
 	}
 
 
