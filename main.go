@@ -10,7 +10,7 @@ type snake struct {
 	x             int
 	y             int
 	snakeNitroLvl int //default/initially at 0, will be altered randomly
-	snacksEaten   int
+	snakeMoved    int
 }
 
 //Implement one snake first and then follow on....
@@ -23,11 +23,11 @@ type snake2 struct {
 func drawSnakes(snk snake) {
 
 	//For one snake.for both, initiate with the loops
-	termbox.SetCell(snk.x, snk.y, '*', termbox.Attribute(3), termbox.Attribute(7))
-	termbox.SetCell(snk.x, snk.y+1, '*', termbox.Attribute(3), termbox.Attribute(7))
-	termbox.SetCell(snk.x, snk.y+2, '*', termbox.Attribute(3), termbox.Attribute(7))
-	termbox.SetCell(snk.x, snk.y+3, '*', termbox.Attribute(3), termbox.Attribute(7))
-	termbox.SetCell(snk.x, snk.y+4, '*', termbox.Attribute(3), termbox.Attribute(7))
+	termbox.SetCell(snk.x, snk.y+1, '*', termbox.Attribute(3), termbox.Attribute(8))
+	termbox.SetCell(snk.x, snk.y+2, '*', termbox.Attribute(3), termbox.Attribute(8))
+	termbox.SetCell(snk.x, snk.y+3, '*', termbox.Attribute(3), termbox.Attribute(8))
+	//termbox.SetCell(snk.x, snk.y+7, '/', termbox.Attribute(3), termbox.Attribute(8))
+	//termbox.SetCell(snk.x, snk.y+8, '+', termbox.Attribute(3), termbox.Attribute(8))
 }
 
 //creates the entire map environment
@@ -59,8 +59,9 @@ func drawWorld(mapEnvDup [25]string) {
 
 func drawEnv(mapEnvDup [25]string, snk snake) {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-	drawSnakes(snk)
 	drawWorld(mapEnvDup)
+	drawSnakes(snk)
+
 	termbox.Flush()
 
 }
@@ -135,24 +136,24 @@ func main() {
 	go func(t *time.Ticker, mainSnk chan snake, worldMap [25]string) {
 		snk := snake{
 			x:             10,
-			y:             25,
+			y:             0,
 			snakeNitroLvl: 0,
-			snacksEaten:   0, //TBW
+			snakeMoved:    0, //TBW
 		}
 		for {
 			select {
 			case <-t.C: //TBC
 				if snk.snakeNitroLvl > 0 {
-					if snk.y < 23 {
+					if snk.y < 22 {
 						if worldMap[snk.y][snk.x] == 32 { //triggered by space bar
-							snk.y += 2
+							snk.y += 1
 							mainSnk <- snk
 						}
 					}
 					snk.snakeNitroLvl--
 				} else if snk.snakeNitroLvl == 0 {
-					if snk.y < 23 {
-						if worldMap[snk.y][snk.x] == 32 {
+					if snk.y <= 22 {
+						if worldMap[snk.y+3][snk.x] == 32 && snk.snakeMoved == 0 {
 							snk.y++
 							mainSnk <- snk
 						}
@@ -160,19 +161,19 @@ func main() {
 				}
 			case event := <-eventQueue:
 				if event.Type == termbox.EventKey {
-					snk.y = 10
+
 					switch event.Key { // 70x25
 					case termbox.KeyArrowUp:
 						if snk.y > 0 {
-							if worldMap[snk.y+3][snk.x] != 45 && snk.snakeNitroLvl == 0 {
-								snk.y++
+							if worldMap[snk.y-3][snk.x] != 45 && snk.snakeNitroLvl == 0 {
+								snk.y--
 								mainSnk <- snk
 							}
 						}
 					case termbox.KeyArrowDown:
 						if snk.y < 25 {
 							if worldMap[snk.y+1][snk.x] != 45 || worldMap[snk.y+2][snk.x] != 45 {
-								snk.y--
+								snk.y++
 								mainSnk <- snk
 							}
 						}
@@ -199,6 +200,8 @@ func main() {
 					case termbox.KeyEsc:
 						quit <- "Game has ended.... Thanks for playing."
 					}
+					snk.snakeMoved = 1
+					mainSnk <- snk
 				}
 			}
 			//check here for end bit, hitting a pre recorded zone.
