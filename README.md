@@ -13,6 +13,6 @@ binary and have fun on your CLI.
 ![](./img.png) 
 
 Contributions are welcome.....
-####### You can add respawning of areas
-####### Change Look of UI
-####### Add concurrent snakes, etc.
+###### You can add respawning of areas
+###### Change Look of UI
+###### Add concurrent snakes, etc.
