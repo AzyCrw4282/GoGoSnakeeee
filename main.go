@@ -11,6 +11,7 @@ type snake struct {
 	y             int
 	snakeNitroLvl int //default/initially at 0, will be altered randomly
 	snakeMoved    int
+	targetStruck  int
 }
 
 //Implement one snake first and then follow on....
@@ -39,7 +40,7 @@ func drawWorld(mapEnvDup [25]string) {
 		case '0':
 			return 3
 		case '=':
-			return 10
+			return 4
 		case '|':
 			return 14
 		case '-':
@@ -71,7 +72,7 @@ func main() {
 
 	mapEnv := [25]string{}
 
-	mapEnv[0] = "|-------------------------------------------===-------------------------------|"
+	mapEnv[0] = "|-------------------------------------------0-------------==----------------|"
 	mapEnv[1] = "|                                                                             |"
 	mapEnv[2] = "|                                                                             |"
 	mapEnv[3] = "|                                                                             |"
@@ -95,7 +96,7 @@ func main() {
 	mapEnv[21] = "|                                                                             |"
 	mapEnv[22] = "|                                                                             |"
 	mapEnv[23] = "|                                                                             |"
-	mapEnv[24] = "0-------------------------------------------===-------------------------------"
+	mapEnv[24] = "------------------------------------------------------------------------------"
 	/*ASCII values
 	- 45
 	| 124
@@ -108,7 +109,7 @@ func main() {
 		panic(err)
 	}
 
-	ticker := time.NewTicker(50 * time.Millisecond)
+	ticker := time.NewTicker(5000 * time.Millisecond)
 	quit := make(chan string)
 
 	//Go routine for even handler
@@ -135,10 +136,11 @@ func main() {
 
 	go func(t *time.Ticker, mainSnk chan snake, worldMap [25]string) {
 		snk := snake{
-			x:             10,
+			x:             3,
 			y:             0,
 			snakeNitroLvl: 0,
 			snakeMoved:    0, //TBW
+
 		}
 		for {
 			select {
@@ -161,17 +163,16 @@ func main() {
 				}
 			case event := <-eventQueue:
 				if event.Type == termbox.EventKey {
-
 					switch event.Key { // 70x25
 					case termbox.KeyArrowUp:
 						if snk.y > 0 {
-							if worldMap[snk.y-3][snk.x] != 45 && snk.snakeNitroLvl == 0 {
+							if worldMap[snk.y-1][snk.x] != 45 && snk.snakeNitroLvl == 0 {
 								snk.y--
 								mainSnk <- snk
 							}
 						}
 					case termbox.KeyArrowDown:
-						if snk.y < 25 {
+						if snk.y < 20 {
 							if worldMap[snk.y+1][snk.x] != 45 || worldMap[snk.y+2][snk.x] != 45 {
 								snk.y++
 								mainSnk <- snk
@@ -180,9 +181,9 @@ func main() {
 					case termbox.KeyArrowLeft: //for left check snks left move -
 						if snk.x > 0 && snk.y > 0 && snk.y < 23 {
 							c1 := worldMap[snk.y][snk.x-1]
-							c2 := worldMap[snk.y][snk.x-2]
-							c3 := worldMap[snk.y][snk.x-3]
-							if (c3 == 32 && c3 != 124) || (c2 == 32 && c2 != 124) || (c1 == 32 && c1 != 124) {
+							//c2 := worldMap[snk.y][snk.x-2] (c2 == 32 && c2 != 124) ||
+							//c3 := worldMap[snk.y][snk.x-3]
+							if c1 == 32 && c1 != 124 {
 								snk.x--
 								mainSnk <- snk
 							}
@@ -204,11 +205,18 @@ func main() {
 					mainSnk <- snk
 				}
 			}
-			//check here for end bit, hitting a pre recorded zone.
-			if snk.y == 1 && snk.x == 35 {
+			//checks here for end bit, hitting a pre recorded zone.
+			if (snk.y == 0 && snk.x == 44) || (snk.y == 70 && snk.x == 44) {
+				snk.targetStruck = 1
+				mainSnk <- snk
+				//fmt.Println("ad")
+			}
+			//fmt.Print( snk.x, "---",snk.y,"---",snk.targetStruck,"|||| ")
+			if snk.targetStruck == 1 && snk.y == 0 && snk.x == 58 {
+				mainSnk <- snk
 				termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 				t.Stop()
-				quit <- "You win the game for the simple move"
+				quit <- "You win the game!!!"
 			}
 		}
 
